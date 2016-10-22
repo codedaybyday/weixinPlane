@@ -1,0 +1,62 @@
+<!DOCTYPE HTML>
+<html lang="en-US">
+<head>
+	<meta charset="UTF-8">
+	<title></title>
+	<style type="text/css">
+		*{
+			margin:0;
+			padding:0;
+			list-style:none;
+		}
+		body,.container,html{
+			height:100%;
+			width:100%;
+			 overflow:hidden; 
+		}
+		/*.sections{
+			height:100%;
+			width:400%;
+		}
+		.section{
+			height:100%;
+			width:25%;
+		}*/
+		.sections:nth-child(1){
+			background:url(images/1.jpg);
+		}
+		.section:nth-child(2){
+			background:url(images/2.jpg);
+		}
+		.section:nth-child(3){
+			background:url(images/3.jpg);
+		}
+		.section:nth-child(4){
+			background:url(images/4.jpg);
+		}
+		.left{
+			float:left;
+		}
+		.active{
+			background:orange;
+		}
+	</style>
+	<script type="text/javascript" src="js/jquery-1.11.3.min.js"></script>
+	<script type="text/javascript" src="js/pageSwitch1.js"></script>
+	<script type="text/javascript">
+		$(function(){
+			$('.container').pageSwitch();
+		});
+	</script>
+</head>
+<body>
+	<div class="container">
+		<ul class="sections">
+			<li class="section">0</li>
+			<li class="section">1</li>
+			<li class="section">2</li>
+			<li class="section">3</li>
+		</ul>
+	</div>
+</body>
+</html>
