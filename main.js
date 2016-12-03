@@ -12,6 +12,7 @@ var enddiv=document.getElementById("enddiv");
     //获得游戏结束后分数统计界面
 var planscore=document.getElementById("planscore");
 var deviceWidth = document.documentElement.clientWidth;
+var deviceHeight = document.documentElement.clientHeight;
     //初始化分数
 function Plane(hp,x,y,width,height,score,dietime,speed,boomimage,planeimage){
     this.hp =hp;
@@ -58,7 +59,9 @@ function Plane(hp,x,y,width,height,score,dietime,speed,boomimage,planeimage){
 function OurPlane(){
     var boomimage = 'images/本方飞机爆炸.gif';
     var planeimage = 'images/我的飞机.gif';
-    Plane.call(this,1,(deviceWidth-66)/2,485,66,80,0,660,0,boomimage,planeimage);
+    this.width = 66;
+    this.height = 88;
+    Plane.call(this,1,(deviceWidth-this.width)/2,deviceHeight-this.height,this.width,this.height,0,660,0,boomimage,planeimage);
     this.shift = function(x,y){
         this.imagenode.style.left = x - this.imagenode.offsetWidth/2 + 'px';
         this.imagenode.style.top = y - this.imagenode.offsetHeight/2 + 'px';
@@ -178,14 +181,33 @@ function start(){
 //暂停
 function pause(){
     clearInterval(timer);
-    document.ontouchmove = null;
+    //document.ontouchmove = null;
+    //document.removeEventListener('touchmove',touchMove,false);
+    removeEvent(document,'touchmove',touchMove);
 }
 //重来
 function again(){
     location.reload(true);
 }
 //document.ontouchmove = touchMove;
-document.addEventListener('touchmove',touchMove, false);
+//document.addEventListener('touchmove',touchMove, false);
+addEvent(document,'touchmove',touchMove);
+function addEvent(el,type,handle){
+    if(el.addEventListener){
+        el.addEventListener(type,handle,false);
+    }else if(el.attachEvent){
+        el.attachEvent('on'+type,handle);
+    }else{
+        el['on'+type] = handle;
+    }
+}
+function removeEvent(el,type,handle){
+    if(el.removeEventListener){
+        el.removeEventListener(type,handle,false);
+    }else if(el.attachEvent){
+        el.detachEvent('on'+type,handle);
+    }
+}
 //鼠标移动事件函数
 function touchMove(e){
     //var e = window.event || ev;
@@ -227,8 +249,9 @@ function begin(ev){
     mainDiv.style.display = 'block';
     scorediv.style.display = 'block';
     if(document.ontouchmove == null){
-        document.ontouchmove = touchMove;
+        //document.ontouchmove = touchMove;
         //document.addEventListener('touchmove',touchMove, false);
+        addEvent(document,'touchmove',touchMove);
     }
     timer = setInterval(start,20);
     stopEventBubble(e);
@@ -239,7 +262,8 @@ aButton[0].onclick = function(ev){
     timer = setInterval(start,20);
     suspenddiv.style.display = 'none';
     //document.ontouchMove = touchMove;
-    document.ontouchmove = touchMove;
+    //document.ontouchmove = touchMove;
+    addEvent(document,'touchmove',touchMove);
     stopEventBubble(e);
 };
 aButton[1].onclick = function(ev){

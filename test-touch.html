@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+	<script>
+		window.onload = function(){
+			addEvent(document,'touchmove',function(){
+				console.log('move')
+			});
+			addEvent(document,'touchstart',function(){
+				console.log('start')
+			});
+			addEvent(document,'touchend',function(){
+				console.log('end')
+			});
+			function addEvent(el,type,handle){
+			    if(el.addEventListener){
+			        el.addEventListener(type,handle,false);
+			    }else if(el.attachEvent){
+			        el.attachEvent('on'+type,handle);
+			    }else{
+			        el['on'+type] = handle;
+			    }
+			}
+		};
+	</script>
+	<style>
+		.test{
+			height:100px;
+			width:100px;
+			background-color: red;
+		}
+	</style>
+</head>
+<body>
+	<div class="test">test</div>
+</body>
+</html>	

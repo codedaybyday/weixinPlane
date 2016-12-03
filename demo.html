@@ -1,0 +1,108 @@
+<!DOCTYPE html>  
+<html>  
+  
+    <head>  
+        <script src="http://cdn.bootcss.com/jquery/3.1.1/jquery.js"></script>  
+        <meta charset="utf-8">  
+        <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no" charset="utf-8">  
+        <title>JS Bin</title>  
+        <style>  
+            * {  
+                padding: 0;  
+                margin: 0;  
+            }  
+            .nav {  
+                width: 300px;  
+                height: 200px;  
+                overflow: hidden;  
+                padding: 10px;  
+                background: #eee;  
+                border: 1px solid #E29E21;  
+                position: absolute;  
+                margin-top: 100px;  
+                left: 50px;  
+            }  
+            ul {  
+                list-style: none;  
+            }  
+            .head {  
+                position: relative;  
+                width: 3000px;  
+                background: #ccc;  
+                left: 0;  
+            }  
+            .box {  
+                position: relative;  
+                width: 50px;  
+                height: 50px;  
+                line-height: 50px;  
+                background: green;  
+                text-align: center;  
+                float: left;  
+                margin-left: 10px;  
+                border-radius: 4px;  
+            }  
+            .selected {  
+                background: #E29E21 !important;  
+                color: #FFFFFF !important;  
+            }  
+        </style>  
+        <script>  
+            $(document).ready(function() {  
+                tag_num = $(".head >li").length;  
+                nav_widthx = document.body.clientWidth; //获取可视区域宽度  
+                max_width = (tag_num * 60 - nav_widthx + 100) * -1; //获取左滑最大距离  
+                //alert(max_width);  
+                document.addEventListener('touchstart', touchStart);  
+                document.addEventListener('touchmove', touchMove);  
+                document.addEventListener('touchend', function() {  
+                    isMove = false;  
+                });  
+  
+            });  
+             //滑动开始事件  
+            function touchStart(e) {  
+                isMove = true;  
+                e.preventDefault();  
+                tx = parseInt($("#head").css('left'));  
+                x = e.touches[0].pageX;  
+            }  
+  
+            function touchMove(e) {  
+                if (isMove) {  
+                    e.preventDefault();  
+                    var n = tx + e.touches[0].pageX - x;  
+                    if (n <= 0 && n > max_width) {  
+                        $("#head").css('left', n + 'px');  
+                    }  
+                }  
+            } 
+        </script>  
+    </head>  
+  
+    <body>  
+        <div class="nav">  
+            <h1>在手机上实现图标滑动效果</h1>  
+            <ul class="head" id="head">  
+  
+                <li class="box selected">标题一</li>  
+                <li class="box">标题二</li>  
+                <li class="box">标题三</li>  
+                <li class="box">标题4</li>  
+                <li class="box">标题5</li>  
+                <li class="box">标题6</li>  
+                <li class="box">标题7</li>  
+                <li class="box">标题8</li>  
+                <li class="box">标题9</li>  
+                <li class="box">标题10</li>  
+                <li class="box">标题11</li>  
+                <li class="box">标题12</li>  
+            </ul>  
+            <br>  
+  
+        </div>  
+  
+  
+    </body>  
+  
+</html> 
