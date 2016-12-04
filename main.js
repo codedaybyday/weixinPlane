@@ -27,46 +27,89 @@ function Plane(hp,x,y,width,height,score,dietime,speed,boomimage,planeimage){
         this.imagenode = document.createElement('img');
         this.imagenode.style.width = width + 'px';
         this.imagenode.style.height = height + 'px';
-        this.imagenode.style.left = x + 'px';
-        this.imagenode.style.top = y + 'px';
+        setPosition(this.imagenode,x,y);
         this.imagenode.src = planeimage;
         this.boomimage = boomimage;
         mainDiv.appendChild(this.imagenode);
     }
     this.init();
     this.move = function(){
+        var imagenodeTop = getTranslateY(this.imagenode),
+            imagenodeLeft = getTranslateX(this.imagenode);
         if(scores<=50000){
-            this.imagenode.style.top=this.imagenode.offsetTop+this.speed+"px";
+            setPosition(this.imagenode,imagenodeLeft,imagenodeTop+this.speed);
         }
         else if(scores>50000&&scores<=100000){
-            this.imagenode.style.top=this.imagenode.offsetTop+this.speed+1+"px";
+            setPosition(this.imagenode,imagenodeLeft,imagenodeTop+this.speed+1);
         }
         else if(scores>100000&&scores<=150000){
-            this.imagenode.style.top=this.imagenode.offsetTop+this.speed+2+"px";
+            setPosition(this.imagenode,imagenodeLeft,imagenodeTop+this.speed+2);
         }
         else if(scores>150000&&scores<=200000){
-            this.imagenode.style.top=this.imagenode.offsetTop+this.speed+3+"px";
+            setPosition(this.imagenode,imagenodeLeft,imagenodeTop+this.speed+3);
         }
         else if(scores>200000&&scores<=300000){
-            this.imagenode.style.top=this.imagenode.offsetTop+this.speed+4+"px";
+            setPosition(this.imagenode,imagenodeLeft,imagenodeTop+this.speed+4);
         }
         else{
-            this.imagenode.style.top=this.imagenode.offsetTop+this.speed+5+"px";
+            setPosition(this.imagenode,imagenodeLeft,imagenodeTop+this.speed+5);
         }
     }
 }
-
-function OurPlane(){
-    var boomimage = 'images/本方飞机爆炸.gif';
-    var planeimage = 'images/我的飞机.gif';
+function setPosition(el,x,y){
+    var tran_val = '';
+    if(x !== null && y !== null){
+        tran_val = 'translateX('+x+'px) translateY('+y+'px)';
+    }else if(x !== null){
+        tran_val = 'translateX('+x+'px)';
+    }else if(y !==null){
+        tran_val = 'translateY('+y+'px)';
+    }
+    //console.log(x,y,tran_val)
+    el.style.transform = tran_val;
+}
+function getStyle(el,attr){
+    return window.getComputedStyle?window.getComputedStyle(el,null)[attr]:el.getCurrentStyle[attr];
+}
+function getTranslateX(el){
+    return getTranslate(el)[4];
+}
+function getTranslate(el){
+    var attr = getStyle(el,'transform');
+    var pattern = /\((.+)\)/;
+    return pattern.exec(attr)?pattern.exec(attr)[1].split(',').map(function(el){
+        return Number(el);
+    }):[];
+}
+function getTranslateY(el){
+    return getTranslate(el)[5];
+}
+function OurPlane(){//使用到单例模式
+    this.boomimage = 'images/my_boom.gif';
+    this.planeimage = 'images/my_plane.gif';
     this.width = 66;
     this.height = 88;
-    Plane.call(this,1,(deviceWidth-this.width)/2,deviceHeight-this.height,this.width,this.height,0,660,0,boomimage,planeimage);
+    this.x = (deviceWidth-this.width)/2;
+    this.y = deviceHeight-this.height;
+    Plane.call(this,1,this.x,this.y,this.width,this.height,0,660,0,this.boomimage,this.planeimage)
     this.shift = function(x,y){
-        this.imagenode.style.left = x - this.imagenode.offsetWidth/2 + 'px';
-        this.imagenode.style.top = y - this.imagenode.offsetHeight/2 + 'px';
+        var imagenodeWidth = this.imagenode.offsetWidth,
+            imagenodeHeight = this.imagenode.offsetHeight;
+            
+        setPosition(this.imagenode,x - imagenodeWidth/2,y - imagenodeHeight/2);
+    }
+    this.reset = function(){
+        this.imagenode.src = this.planeimage;
+        setPosition(this.imagenode,this.x,this.y);
     }
 }
+function getInstance(fn){
+    var result;
+    return function(){
+        return result || (result = new fn());//fn 记得要有返回值
+    }
+}
+var getOurPlane = getInstance(OurPlane);
 function Enemy(hp,a,b,width,height,score,dietime,speed,boomimage,planeimage){
     Plane.call(this,hp,getRan(a,b),-100,width,height,score,dietime,speed,boomimage,planeimage);
 }
@@ -80,17 +123,18 @@ function Bullet(x,y,width,height,bulletimage){
         this.imagenode.src = bulletimage;
         this.imagenode.style.width = width + 'px';
         this.imagenode.style.height = height + 'px';
-        this.imagenode.style.left = x + 'px';
-        this.imagenode.style.top = y + 'px';
+        //console.log(x,y)
+        setPosition(this.imagenode,x,y);
         mainDiv.appendChild(this.imagenode);
     }
     this.init();
     this.move = function(){
-        this.imagenode.style.top = this.imagenode.offsetTop - 20 + 'px';
+        var imagenodeTop = getTranslateY(this.imagenode);
+        setPosition(this.imagenode,x,imagenodeTop - 20);
     }
 }
 var enemies = [];
-var self = new OurPlane();
+var self = getOurPlane();
 var bullets = [];
 var mark = 0;
 var mark1 = 0;
@@ -104,31 +148,40 @@ function start(){
         positionY = 0;
     }
     mark++;
+    var selfnode = self.imagenode,
+        selfnodeLeft = getTranslateX(selfnode),
+        selfnodeTop = getTranslateY(selfnode),
+        selfnodeWidth = selfnode.offsetWidth,
+        selfnodeHeight = selfnode.offsetHeight;
     if(mark == 20){
         mark1++;
         if(mark1%5 == 0){
-            enemies.push(new Enemy(6,0,274,46,60,5000,360,getRan(1,3),'images/中飞机爆炸.gif','images/enemy3_fly_1.png'));
+            enemies.push(new Enemy(6,0,274,46,60,5000,360,getRan(1,3),'images/middle_boom.gif','images/enemy3_fly_1.png'));
         }
         if(mark1 == 20){
-            enemies.push(new Enemy(12,0,210,110,164,30000,540,1,'images/大飞机爆炸.gif','images/enemy2_fly_1.png'));
+            enemies.push(new Enemy(12,0,210,110,164,30000,540,1,'images/big_boom.gif','images/enemy2_fly_1.png'));
             mark1 = 0;
         }else{
-            enemies.push(new Enemy(1,0,286,34,24,100,360,4,'images/小飞机爆炸.gif','images/enemy1_fly_1.png'));
+            enemies.push(new Enemy(1,0,286,34,24,100,360,4,'images/small_boom.gif','images/enemy1_fly_1.png'));
         }
         mark = 0;
     }
     for(var i=0;i<enemies.length;i++){
         enemies[i].move();
         if(enemies[i].isdie == false){
-            if(enemies[i].imagenode.offsetTop >= mainDiv.offsetHeight){
-                //enemies[i].isdie = true;
+            var enemynode = enemies[i].imagenode,
+                enemynodeLeft = getTranslateX(enemynode),
+                enemynodeWidth = enemynode.offsetWidth,
+                enemynodeTop = getTranslateY(enemynode),
+                enemynodeHeight = enemynode.offsetHeight;
+
+            if(enemynodeTop >= mainDiv.offsetHeight){
                 mainDiv.removeChild(enemies[i].imagenode);
                 enemies.splice(i,1);
             }
-            var enemynode = enemies[i].imagenode;
-            var selfnode = self.imagenode;
-            if(selfnode.offsetLeft + selfnode.offsetWidth >= enemynode.offsetLeft && enemynode.offsetLeft+enemynode.offsetWidth>=selfnode.offsetLeft){
-                if(enemynode.offsetTop+enemynode.offsetHeight>=selfnode.offsetTop && enemynode.offsetTop <= selfnode.offsetTop+selfnode.offsetHeight){
+
+            if(selfnodeLeft + selfnodeWidth >= enemynodeLeft && enemynodeLeft+enemynodeWidth>=selfnodeLeft){
+                if(enemynodeTop+enemynodeHeight>=selfnodeTop && enemynodeTop <= selfnodeTop+selfnodeHeight){
                     enddiv.style.display = 'block';
                     self.imagenode.src = self.boomimage;
                     planscore.innerHTML = scores;
@@ -145,22 +198,34 @@ function start(){
         }
     }
     if(mark%5 == 0){
-        bullets.push(new Bullet(parseInt( self.imagenode.style.left )+31,parseInt(self.imagenode.style.top),6,14,'images/bullet1.png'));
+        console.log(selfnodeLeft,typeof selfnodeLeft,selfnodeLeft+31,selfnodeTop);
+        bullets.push(new Bullet(selfnodeLeft+31,selfnodeTop,6,14,'images/bullet1.png'));
     }
     for(var i=0;i<bullets.length;i++){
         bullets[i].move();
-        if(bullets[i].imagenode.offsetTop<0){
-            mainDiv.removeChild(bullets[i].imagenode);
+        var bulletnode = bullets[i].imagenode;
+        //console.log(getTranslateY( bulletnode ),bulletnode,getTranslate(bulletnode))
+        if(getTranslateY( bulletnode )<0){
+            mainDiv.removeChild(bulletnode);
             bullets.splice(i,1);
         }
     }
     for(var i=0;i<bullets.length;i++){      //如果将子弹的运动放在这个循环中，子弹的运动速度将会变得很慢
         for(var j=0;j<enemies.length;j++){
             if(enemies[j].isdie == false){
-                var bulletnode = bullets[i].imagenode;
-                var enemynode = enemies[j].imagenode;
-                if(bulletnode.offsetLeft + bulletnode.offsetWidth >= enemynode.offsetLeft && enemynode.offsetLeft+enemynode.offsetWidth>=bulletnode.offsetLeft){
-                    if(enemynode.offsetTop+enemynode.offsetHeight>=bulletnode.offsetTop && enemynode.offsetTop <= bulletnode.offsetTop+bulletnode.offsetHeight){
+                var bulletnode = bullets[i].imagenode,
+                    enemynode = enemies[j].imagenode,
+                    bulletnodeLeft = getTranslateX(bulletnode),
+                    bulletnodeTop = getTranslateY(bulletnode),
+                    bulletnodeWidth = bulletnode.offsetWidth,
+                    bulletnodeHeight = bulletnode.offsetHeight,
+                    enemynodeLeft = getTranslateX(enemynode),
+                    enemynodeTop = getTranslateY(enemynode),
+                    enemynodeWidth = enemynode.offsetWidth,
+                    enemynodeHeight = enemynode.offsetHeight;
+
+                if(bulletnodeLeft + bulletnodeWidth >= enemynodeLeft && enemynodeLeft+enemynodeWidth>=bulletnodeLeft){
+                    if(enemynodeTop+enemynodeHeight>=bulletnodeTop && enemynodeTop <= bulletnodeTop+bulletnodeHeight){
                         enemies[j].hp -= self.attack;
                         if(enemies[j].hp == 0){
                             enemies[j].isdie = true;
@@ -181,16 +246,32 @@ function start(){
 //暂停
 function pause(){
     clearInterval(timer);
-    //document.ontouchmove = null;
-    //document.removeEventListener('touchmove',touchMove,false);
     removeEvent(document,'touchmove',touchMove);
+}
+//清屏
+function clearScreen(){
+    for(var i=0,l=enemies.length;i<l;i++){
+        maindiv.removeChild(enemies[i].imagenode);
+    }
+    for(var i=0,l=bullets.length;i<l;i++){
+        maindiv.removeChild(bullets[i].imagenode);
+    }
 }
 //重来
 function again(){
-    location.reload(true);
+    //location.reload(true);
+    clearScreen();
+    enemies = [];
+    bullets = [];
+    enddiv.style.display = 'none';
+    self.reset();
+    mark = 0;
+    mark1 = 0;
+    scores = 0;
+    positionY = 0;
+    timer = null;
+    begin();
 }
-//document.ontouchmove = touchMove;
-//document.addEventListener('touchmove',touchMove, false);
 addEvent(document,'touchmove',touchMove);
 function addEvent(el,type,handle){
     if(el.addEventListener){
@@ -210,11 +291,9 @@ function removeEvent(el,type,handle){
 }
 //鼠标移动事件函数
 function touchMove(e){
-    //var e = window.event || ev;
-    //console.log(e,document.documentElement.clientWidth);
     var x = e.touches[0].clientX;
     var y = e.touches[0].clientY;
-    console.log(x)
+    //console.log(x)
     if(x<0){
         x = 0;
     }
@@ -239,42 +318,36 @@ function stopEventBubble(ev){
         e.cancelBubble();
     }
 }
-document.onclick = function(){
+addEvent(document,'click',function(){
     suspenddiv.style.display = 'block';
     pause();
-}
+});
 function begin(ev){
     var e = window.event || ev;
     startdiv.style.display = 'none';
     mainDiv.style.display = 'block';
     scorediv.style.display = 'block';
-    if(document.ontouchmove == null){
-        //document.ontouchmove = touchMove;
-        //document.addEventListener('touchmove',touchMove, false);
-        addEvent(document,'touchmove',touchMove);
-    }
+    addEvent(document,'touchmove',touchMove);
     timer = setInterval(start,20);
     stopEventBubble(e);
 }
 var aButton = suspenddiv.getElementsByTagName('button');
-aButton[0].onclick = function(ev){
+addEvent(aButton[0],'click',function(ev){
     var e = window.event || ev;
     timer = setInterval(start,20);
     suspenddiv.style.display = 'none';
-    //document.ontouchMove = touchMove;
-    //document.ontouchmove = touchMove;
     addEvent(document,'touchmove',touchMove);
     stopEventBubble(e);
-};
-aButton[1].onclick = function(ev){
+});
+addEvent(aButton[1],'click',function(ev){
     var e = window.event || ev;
     again();
     stopEventBubble(e);
-}
-aButton[2].onclick = function(ev){
+});
+addEvent(aButton[2],'click',function(ev){
     var e = window.event || ev;
     suspenddiv.style.display = 'none';
     mainDiv.style.display = 'none';
     startdiv.style.display = 'block';
     stopEventBubble(e);
-}
+});
