@@ -14,7 +14,7 @@ var planscore=document.getElementById("planscore");
 var docEle = document.documentElement;
 var deviceWidth = docEle.clientWidth;
 var deviceHeight = docEle.clientHeight;
-    //初始化分数
+//飞机类，基类
 function Plane(hp,x,y,width,height,score,dietime,speed,boomimage,planeimage){
     this.hp =hp;
     this.score = score;
@@ -59,18 +59,29 @@ function Plane(hp,x,y,width,height,score,dietime,speed,boomimage,planeimage){
         }
     }
 }
+/**
+ * 设置dom位移
+ * @param {[type]}
+ * @param {[type]}
+ * @param {[type]}
+ */
 function setPosition(el,x,y){
-    var tran_val = '';
+    var val = '';
     if(x !== null && y !== null){
-        tran_val = 'translateX('+x+'px) translateY('+y+'px)';
+        val = 'translateX('+x+'px) translateY('+y+'px)';
     }else if(x !== null){
-        tran_val = 'translateX('+x+'px)';
+        val = 'translateX('+x+'px)';
     }else if(y !==null){
-        tran_val = 'translateY('+y+'px)';
+        val = 'translateY('+y+'px)';
     }
     //console.log(x,y,tran_val)
-    el.style.transform = tran_val;
+    el.style.transform = val;
 }
+/**获取渲染后的css样式,做兼容
+ * @param  {[type]}
+ * @param  {[type]}
+ * @return {[type]}
+ */
 function getStyle(el,attr){
     return window.getComputedStyle?window.getComputedStyle(el,null)[attr]:el.getCurrentStyle[attr];
 }
@@ -137,6 +148,7 @@ function Bullet(x,y,width,height,bulletimage){
     }
 }
 var enemies = [];
+var tobeCleared = [];
 var self = getOurPlane();
 var bullets = [];
 var mark = 0;
@@ -181,8 +193,8 @@ function start(){
                 enemynodeHeight = enemynode.offsetHeight;
 
             if(enemynodeTop >= mainDiv.offsetHeight){
-                mainDiv.removeChild(enemynode);
-                enemies.splice(i,1);
+                //mainDiv.removeChild(enemynode);
+                tobeCleared.push(enemies.splice(i,1)[0]);
             }
 
             if(selfnodeLeft + selfnodeWidth >= enemynodeLeft && enemynodeLeft+enemynodeWidth>=selfnodeLeft){
@@ -191,14 +203,16 @@ function start(){
                     self.imagenode.src = self.boomimage;
                     planscore.innerHTML = scores;
                     pause();
+                    return false;
                 }
             }
         }
         if(enemies[i].isdie == true){
             enemies[i].dietimes += 20;
             if(enemies[i].dietimes == enemies[i].dietime){
-                mainDiv.removeChild(enemies[i].imagenode);
-                enemies.splice(i,1);
+                //mainDiv.removeChild(enemies[i].imagenode);
+                //enemies.splice(i,1);
+                tobeCleared.push(enemies.splice(i,1)[0]);
             }
         }
     }
@@ -211,13 +225,14 @@ function start(){
         var bulletnode = bullets[i].imagenode;
         //console.log(getTranslateY( bulletnode ),bulletnode,getTranslate(bulletnode))
         if(getTranslateY( bulletnode )<0){
-            mainDiv.removeChild(bulletnode);
-            bullets.splice(i,1);
+            //mainDiv.removeChild(bulletnode);
+            //bullets.splice(i,1);
+            tobeCleared.push(bullets.splice(i,1)[0]);
         }
     }
     for(var i=0;i<bullets.length;i++){      //如果将子弹的运动放在这个循环中，子弹的运动速度将会变得很慢
         for(var j=0;j<enemies.length;j++){
-            if(enemies[j].isdie == false){
+            if(bullets[i] && enemies[j].isdie == false){
                 var bulletnode = bullets[i].imagenode,
                     enemynode = enemies[j].imagenode,
                     bulletnodeTrans = getTranslate(bulletnode),
@@ -241,18 +256,25 @@ function start(){
                            // console.log(enemies[j].score);
                             scorelabel.innerHTML = scores;
                         }
-                        mainDiv.removeChild(bullets[i].imagenode);
-                        bullets.splice(i,1);
+                        //mainDiv.removeChild(bullets[i].imagenode);
+                        //bullets.splice(i,1);
+                        tobeCleared.push(bullets.splice(i,1)[0]);
                     }
                 }
             }
         }
         
     }
+    //统一清除掉需要消失的飞机或子弹
+    for(var i=0;i<tobeCleared.length;i++){
+        mainDiv.removeChild(tobeCleared.splice(i,1)[0].imagenode);
+    }
+    timer = window.requestAnimationFrame(start);
 }
 //暂停
 function pause(){
-    clearInterval(timer);
+    //clearInterval(timer);
+    window.cancelAnimationFrame(timer);
     removeEvent(document,'touchmove',touchMove);
 }
 //清屏
@@ -336,13 +358,15 @@ function begin(ev){
     mainDiv.style.display = 'block';
     scorediv.style.display = 'block';
     addEvent(document,'touchmove',touchMove);
-    timer = setInterval(start,20);
+    //timer = setInterval(start,20);
+    timer = window.requestAnimationFrame(start);
     stopEventBubble(e);
 }
 var aButton = suspenddiv.getElementsByTagName('button');
 addEvent(aButton[0],'click',function(ev){
     var e = window.event || ev;
-    timer = setInterval(start,20);
+    //timer = setInterval(start,20);
+    timer = window.requestAnimationFrame(start);
     suspenddiv.style.display = 'none';
     addEvent(document,'touchmove',touchMove);
     stopEventBubble(e);
@@ -350,6 +374,7 @@ addEvent(aButton[0],'click',function(ev){
 addEvent(aButton[1],'click',function(ev){
     var e = window.event || ev;
     again();
+    suspenddiv.style.display = 'none';
     stopEventBubble(e);
 });
 addEvent(aButton[2],'click',function(ev){
