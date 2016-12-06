@@ -11,8 +11,9 @@ var suspenddiv=document.getElementById("suspenddiv");
 var enddiv=document.getElementById("enddiv");
     //获得游戏结束后分数统计界面
 var planscore=document.getElementById("planscore");
-var deviceWidth = document.documentElement.clientWidth;
-var deviceHeight = document.documentElement.clientHeight;
+var docEle = document.documentElement;
+var deviceWidth = docEle.clientWidth;
+var deviceHeight = docEle.clientHeight;
     //初始化分数
 function Plane(hp,x,y,width,height,score,dietime,speed,boomimage,planeimage){
     this.hp =hp;
@@ -34,8 +35,10 @@ function Plane(hp,x,y,width,height,score,dietime,speed,boomimage,planeimage){
     }
     this.init();
     this.move = function(){
-        var imagenodeTop = getTranslateY(this.imagenode),
-            imagenodeLeft = getTranslateX(this.imagenode);
+        var translateArr = getTranslate(this.imagenode),
+            imagenodeTop = translateArr[5],
+            imagenodeLeft = translateArr[4];
+
         if(scores<=50000){
             setPosition(this.imagenode,imagenodeLeft,imagenodeTop+this.speed);
         }
@@ -95,7 +98,7 @@ function OurPlane(){//使用到单例模式
     this.shift = function(x,y){
         var imagenodeWidth = this.imagenode.offsetWidth,
             imagenodeHeight = this.imagenode.offsetHeight;
-            
+
         setPosition(this.imagenode,x - imagenodeWidth/2,y - imagenodeHeight/2);
     }
     this.reset = function(){
@@ -149,8 +152,9 @@ function start(){
     }
     mark++;
     var selfnode = self.imagenode,
-        selfnodeLeft = getTranslateX(selfnode),
-        selfnodeTop = getTranslateY(selfnode),
+        selfnodeTrans = getTranslate(selfnode),
+        selfnodeLeft = selfnodeTrans[4],
+        selfnodeTop = selfnodeTrans[5],
         selfnodeWidth = selfnode.offsetWidth,
         selfnodeHeight = selfnode.offsetHeight;
     if(mark == 20){
@@ -170,13 +174,14 @@ function start(){
         enemies[i].move();
         if(enemies[i].isdie == false){
             var enemynode = enemies[i].imagenode,
-                enemynodeLeft = getTranslateX(enemynode),
+                enemynodeTrans = getTranslate(enemynode),
+                enemynodeLeft = enemynodeTrans[4],
                 enemynodeWidth = enemynode.offsetWidth,
-                enemynodeTop = getTranslateY(enemynode),
+                enemynodeTop = enemynodeTrans[5],
                 enemynodeHeight = enemynode.offsetHeight;
 
             if(enemynodeTop >= mainDiv.offsetHeight){
-                mainDiv.removeChild(enemies[i].imagenode);
+                mainDiv.removeChild(enemynode);
                 enemies.splice(i,1);
             }
 
@@ -198,7 +203,7 @@ function start(){
         }
     }
     if(mark%5 == 0){
-        console.log(selfnodeLeft,typeof selfnodeLeft,selfnodeLeft+31,selfnodeTop);
+        //console.log(selfnodeLeft,typeof selfnodeLeft,selfnodeLeft+31,selfnodeTop);
         bullets.push(new Bullet(selfnodeLeft+31,selfnodeTop,6,14,'images/bullet1.png'));
     }
     for(var i=0;i<bullets.length;i++){
@@ -215,12 +220,14 @@ function start(){
             if(enemies[j].isdie == false){
                 var bulletnode = bullets[i].imagenode,
                     enemynode = enemies[j].imagenode,
-                    bulletnodeLeft = getTranslateX(bulletnode),
-                    bulletnodeTop = getTranslateY(bulletnode),
+                    bulletnodeTrans = getTranslate(bulletnode),
+                    enemynodeTrans = getTranslate(enemynode),
+                    bulletnodeLeft = bulletnodeTrans[4],
+                    bulletnodeTop = bulletnodeTrans[5],
                     bulletnodeWidth = bulletnode.offsetWidth,
                     bulletnodeHeight = bulletnode.offsetHeight,
-                    enemynodeLeft = getTranslateX(enemynode),
-                    enemynodeTop = getTranslateY(enemynode),
+                    enemynodeLeft = enemynodeTrans[4],
+                    enemynodeTop = enemynodeTrans[5],
                     enemynodeWidth = enemynode.offsetWidth,
                     enemynodeHeight = enemynode.offsetHeight;
 
@@ -308,6 +315,7 @@ function touchMove(e){
     }
     self.shift(x,y);
     e.preventDefault();
+    return false;
 }
 //阻止事件冒泡
 function stopEventBubble(ev){

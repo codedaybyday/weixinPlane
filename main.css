@@ -5,6 +5,9 @@
 html,body{
     height:100%;
 }
+img{
+    translate3d(0, 0, 0)
+}
 #contentdiv{
     position: absolute;
     //left: 500px;
