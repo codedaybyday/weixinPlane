@@ -68,11 +68,11 @@ function Plane(hp,x,y,width,height,score,dietime,speed,boomimage,planeimage){
 function setPosition(el,x,y){
     var val = '';
     if(x !== null && y !== null){
-        val = 'translateX('+x+'px) translateY('+y+'px)';
+        val = 'translate3d('+x+'px,'+y+'px,0)';
     }else if(x !== null){
-        val = 'translateX('+x+'px)';
+        val = 'translate3d('+x+'px,0,0)';
     }else if(y !==null){
-        val = 'translateY('+y+'px)';
+        val = 'translate3d(0,'+y+'px,0)';
     }
     //console.log(x,y,tran_val)
     el.style.transform = val;
